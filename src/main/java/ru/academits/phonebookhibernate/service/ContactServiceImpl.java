@@ -13,9 +13,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ContactServiceImpl implements ContactService {
-    private static final String PHONE_ALREADY_EXISTS = "Уже есть другой контакт с таким номером";
-    private static final String CONTACT_NOT_FOUND = "Контакт не найден или был удален";
-
     private final ContactRepository contactRepository;
 
     @Override
@@ -34,7 +31,7 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public void create(Contact contact) {
         if (contactRepository.existsByPhoneIgnoreCase(contact.getPhone())) {
-            throw new ContactException(PHONE_ALREADY_EXISTS);
+            throw new ContactException("contact.phone.already-exists");
         }
 
         contactRepository.save(contact);
@@ -44,10 +41,10 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public void update(int contactId, Contact contact) {
         Contact existingContact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new ContactException(CONTACT_NOT_FOUND));
+                .orElseThrow(() -> new ContactException("contact.not-found"));
 
         if (contactRepository.existsByPhoneIgnoreCaseAndIdNot(contact.getPhone(), contactId)) {
-            throw new ContactException(PHONE_ALREADY_EXISTS);
+            throw new ContactException("contact.phone.already-exists");
         }
 
         existingContact.setSurname(contact.getSurname());

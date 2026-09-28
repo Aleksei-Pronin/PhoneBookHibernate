@@ -10,13 +10,15 @@ import lombok.Setter;
 public class ContactDto {
     private Integer id;
 
-    @NotBlank(message = "Необходимо заполнить фамилию")
+    @Size(max = 100, message = "{contact.surname.max}")
+    @NotBlank(message = "{contact.surname.required}")
     private String surname;
 
-    @NotBlank(message = "Необходимо заполнить имя")
+    @Size(max = 100, message = "{contact.name.max}")
+    @NotBlank(message = "{contact.name.required}")
     private String name;
 
-    @Size(max = 20, message = "Номер телефона не должен превышать 20 символов")
-    @NotBlank(message = "Необходимо заполнить номер телефона")
+    @Size(max = 20, message = "{contact.phone.max}")
+    @NotBlank(message = "{contact.phone.required}")
     private String phone;
 }
