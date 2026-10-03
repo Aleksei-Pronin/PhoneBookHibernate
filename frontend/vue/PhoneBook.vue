@@ -217,10 +217,7 @@ export default {
                 gravity: "top",
                 position: "right",
                 close: true,
-                className: "phonebook-toast",
-                style: {
-                    background: "#dc3545"
-                }
+                className: "phonebook-toast"
             }).showToast();
         },
 

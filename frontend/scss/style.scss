@@ -1,5 +1,14 @@
 $background-color: #e7f0ff;
+$toast-error-bg: #dc3545;
 
 body {
   background-color: $background-color;
+}
+
+.phonebook-toast {
+  background: $toast-error-bg;
+
+  .toast-close {
+    opacity: 1;
+  }
 }
