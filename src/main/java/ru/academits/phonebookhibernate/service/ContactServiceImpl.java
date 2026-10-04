@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.academits.phonebookhibernate.dao.ContactRepository;
+import ru.academits.phonebookhibernate.dto.BaseResponse;
 import ru.academits.phonebookhibernate.entity.Contact;
-import ru.academits.phonebookhibernate.exception.ContactException;
 
 import java.util.List;
 
@@ -29,22 +29,27 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public void create(Contact contact) {
+    public BaseResponse create(Contact contact) {
         if (contactRepository.existsByPhoneIgnoreCase(contact.getPhone())) {
-            throw new ContactException("contact.phone.already-exists");
+            return BaseResponse.error("Уже есть другой контакт с таким номером");
         }
 
         contactRepository.save(contact);
         log.info("Contact created, id={}", contact.getId());
+        return BaseResponse.ok();
     }
 
     @Override
-    public void update(int contactId, Contact contact) {
+    public BaseResponse update(Contact contact, int contactId) {
         Contact existingContact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new ContactException("contact.not-found"));
+                .orElse(null);
+
+        if (existingContact == null) {
+            return BaseResponse.error("Контакт не найден или был удален");
+        }
 
         if (contactRepository.existsByPhoneIgnoreCaseAndIdNot(contact.getPhone(), contactId)) {
-            throw new ContactException("contact.phone.already-exists");
+            return BaseResponse.error("Уже есть другой контакт с таким номером");
         }
 
         existingContact.setSurname(contact.getSurname());
@@ -53,17 +58,20 @@ public class ContactServiceImpl implements ContactService {
 
         contactRepository.save(existingContact);
         log.info("Contact updated, id={}", contactId);
+        return BaseResponse.ok();
     }
 
     @Override
-    public void delete(int contactId) {
+    public BaseResponse delete(int contactId) {
         contactRepository.deleteById(contactId);
         log.info("Contact deleted, id={}", contactId);
+        return BaseResponse.ok();
     }
 
     @Override
-    public void delete(List<Integer> contactIds) {
+    public BaseResponse delete(List<Integer> contactIds) {
         contactRepository.deleteAllById(contactIds);
         log.info("Contacts deleted, ids={}", contactIds);
+        return BaseResponse.ok();
     }
 }
