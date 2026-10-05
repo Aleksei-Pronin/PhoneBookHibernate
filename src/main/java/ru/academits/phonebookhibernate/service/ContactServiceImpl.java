@@ -20,14 +20,15 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public List<Contact> get(String term) {
+        List<Contact> contacts;
+
         if (term == null || term.isBlank()) {
-            List<Contact> contacts = contactRepository.findAllByOrderByIdAsc();
-            log.debug("Loaded {} contact(s)", contacts.size());
-            return contacts;
+            contacts = contactRepository.findAllByOrderByIdAsc();
+        } else {
+            contacts = contactRepository.findByTerm(term.trim());
         }
 
-        List<Contact> contacts = contactRepository.findByTerm(term.trim());
-        log.debug("Found {} contact(s)", contacts.size());
+        log.debug("Loaded {} contact(s)", contacts.size());
         return contacts;
     }
 
@@ -55,9 +56,7 @@ public class ContactServiceImpl implements ContactService {
             return BaseResponse.error(getMessage("contact.phone.already-exists"));
         }
 
-        existingContact.setSurname(contact.getSurname());
-        existingContact.setName(contact.getName());
-        existingContact.setPhone(contact.getPhone());
+        existingContact.updateFrom(contact);
 
         contactRepository.save(existingContact);
         log.info("Contact updated, id={}", contactId);

@@ -24,4 +24,10 @@ public class Contact {
 
     @Column(nullable = false, length = 20)
     private String phone;
+
+    public void updateFrom(Contact contact) {
+        surname = contact.getSurname();
+        name = contact.getName();
+        phone = contact.getPhone();
+    }
 }
