@@ -2,6 +2,8 @@ package ru.academits.phonebookhibernate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import ru.academits.phonebookhibernate.dao.ContactRepository;
 import ru.academits.phonebookhibernate.dto.BaseResponse;
@@ -14,11 +16,12 @@ import java.util.List;
 @Slf4j
 public class ContactServiceImpl implements ContactService {
     private final ContactRepository contactRepository;
+    private final MessageSource messageSource;
 
     @Override
     public List<Contact> get(String term) {
         if (term == null || term.isBlank()) {
-            List<Contact> contacts = contactRepository.findAll();
+            List<Contact> contacts = contactRepository.findAllByOrderByIdAsc();
             log.debug("Loaded {} contact(s)", contacts.size());
             return contacts;
         }
@@ -31,7 +34,7 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public BaseResponse create(Contact contact) {
         if (contactRepository.existsByPhoneIgnoreCase(contact.getPhone())) {
-            return BaseResponse.error("Уже есть другой контакт с таким номером");
+            return BaseResponse.error(getMessage("contact.phone.already-exists"));
         }
 
         contactRepository.save(contact);
@@ -45,11 +48,11 @@ public class ContactServiceImpl implements ContactService {
                 .orElse(null);
 
         if (existingContact == null) {
-            return BaseResponse.error("Контакт не найден или был удален");
+            return BaseResponse.error(getMessage("contact.not-found"));
         }
 
         if (contactRepository.existsByPhoneIgnoreCaseAndIdNot(contact.getPhone(), contactId)) {
-            return BaseResponse.error("Уже есть другой контакт с таким номером");
+            return BaseResponse.error(getMessage("contact.phone.already-exists"));
         }
 
         existingContact.setSurname(contact.getSurname());
@@ -73,5 +76,9 @@ public class ContactServiceImpl implements ContactService {
         contactRepository.deleteAllById(contactIds);
         log.info("Contacts deleted, ids={}", contactIds);
         return BaseResponse.ok();
+    }
+
+    private String getMessage(String key) {
+        return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
     }
 }

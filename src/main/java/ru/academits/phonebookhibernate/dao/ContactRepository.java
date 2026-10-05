@@ -6,7 +6,9 @@ import ru.academits.phonebookhibernate.entity.Contact;
 import java.util.List;
 
 public interface ContactRepository extends JpaRepository<Contact, Integer> {
-    List<Contact> findBySurnameContainingIgnoreCaseOrNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(
+    List<Contact> findAllByOrderByIdAsc();
+
+    List<Contact> findBySurnameContainingIgnoreCaseOrNameContainingIgnoreCaseOrPhoneContainingIgnoreCaseOrderByIdAsc(
             String surname, String name, String phone);
 
     boolean existsByPhoneIgnoreCase(String phone);
@@ -14,7 +16,7 @@ public interface ContactRepository extends JpaRepository<Contact, Integer> {
     boolean existsByPhoneIgnoreCaseAndIdNot(String phone, int contactId);
 
     default List<Contact> findByTerm(String term) {
-        return findBySurnameContainingIgnoreCaseOrNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(
+        return findBySurnameContainingIgnoreCaseOrNameContainingIgnoreCaseOrPhoneContainingIgnoreCaseOrderByIdAsc(
                 term, term, term);
     }
 }
