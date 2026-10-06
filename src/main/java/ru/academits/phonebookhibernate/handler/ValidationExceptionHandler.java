@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class ValidationExceptionHandler {
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public BaseResponse handleValidationException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult()
