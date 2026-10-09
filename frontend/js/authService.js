@@ -23,6 +23,12 @@ export default class AuthService {
             .then(response => response.data);
     }
 
+    registerAdmin(userName, password, token) {
+        return axios.post("/admin", {userName, password},
+            {params: {token}})
+            .then(response => response.data);
+    }
+
     logout() {
         return axios.post("/logout")
             .then(response => response.data);
