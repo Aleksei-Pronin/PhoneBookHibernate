@@ -6,7 +6,6 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.academits.phonebookhibernate.dto.BaseResponse;
 import ru.academits.phonebookhibernate.service.MessageService;
 
