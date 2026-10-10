@@ -8,7 +8,9 @@ export default class AuthService {
         return axios.post("/login", body, {
             headers: {"Content-Type": "application/x-www-form-urlencoded"}
         })
-            .then(response => response.data)
+            .then(response => axios.get("/csrf")
+                .then(() => response.data)
+            )
             .catch(error => {
                 if (error.response) {
                     return error.response.data;
@@ -31,6 +33,8 @@ export default class AuthService {
 
     logout() {
         return axios.post("/logout")
-            .then(response => response.data);
+            .then(response => axios.get("/csrf")
+                .then(() => response.data)
+            );
     }
 }
