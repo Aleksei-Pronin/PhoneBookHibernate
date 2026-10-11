@@ -29,7 +29,7 @@ public class AuthController {
         return userService.register(userDtoToUserConverter.convert(user), UserRole.ROLE_USER);
     }
 
-    @PostMapping("/admin")
+    @PostMapping("/registration/admin")
     public BaseResponse registerAdmin(@Valid @RequestBody ApplicationUserDto user,
                                       @RequestParam String token) {
         if (adminRegistrationToken.isBlank()) {

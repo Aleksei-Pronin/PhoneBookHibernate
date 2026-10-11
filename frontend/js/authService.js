@@ -26,7 +26,7 @@ export default class AuthService {
     }
 
     registerAdmin(userName, password, token) {
-        return axios.post("/admin", {userName, password},
+        return axios.post("/registration/admin", {userName, password},
             {params: {token}})
             .then(response => response.data);
     }

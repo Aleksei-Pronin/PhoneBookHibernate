@@ -11,7 +11,8 @@ module.exports = {
 
     output: {
         filename: "script.js",
-        path: path.resolve(__dirname, "..", "src", "main", "resources", "static")
+        path: path.resolve(__dirname, "..", "src", "main", "resources", "static"),
+        publicPath: "/"
     },
 
     devServer: {
