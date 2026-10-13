@@ -11,7 +11,8 @@ module.exports = {
 
     output: {
         filename: "script.js",
-        path: path.resolve(__dirname, "..", "src", "main", "resources", "static")
+        path: path.resolve(__dirname, "..", "src", "main", "resources", "static"),
+        publicPath: "/"
     },
 
     devServer: {
@@ -20,7 +21,7 @@ module.exports = {
         port: 3000,
         proxy: [
             {
-                context: ["/api"],
+                context: ["/api", "/login", "/logout", "/registration", "/me"],
                 target: "http://localhost:8080",
             }
         ]

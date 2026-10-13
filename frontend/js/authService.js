@@ -1,0 +1,40 @@
+import axios from "axios";
+
+export default class AuthService {
+    login(userName, password) {
+        const body = new URLSearchParams();
+        body.append("username", userName);
+        body.append("password", password);
+        return axios.post("/login", body, {
+            headers: {"Content-Type": "application/x-www-form-urlencoded"}
+        })
+            .then(response => axios.get("/csrf")
+                .then(() => response.data)
+            )
+            .catch(error => {
+                if (error.response) {
+                    return error.response.data;
+                }
+
+                throw error;
+            });
+    }
+
+    register(userName, password) {
+        return axios.post("/registration", {userName, password})
+            .then(response => response.data);
+    }
+
+    registerAdmin(userName, password, token) {
+        return axios.post("/registration/admin", {userName, password},
+            {params: {token}})
+            .then(response => response.data);
+    }
+
+    logout() {
+        return axios.post("/logout")
+            .then(response => axios.get("/csrf")
+                .then(() => response.data)
+            );
+    }
+}

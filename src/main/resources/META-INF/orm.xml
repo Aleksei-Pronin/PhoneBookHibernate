@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings
+        xmlns="https://jakarta.ee/xml/ns/persistence/orm"
+        version="3.2">
+
+    <named-query name="Contact.findByTerm">
+        <query>
+            <![CDATA[
+                select c
+                from Contact c
+                where lower(c.surname) like lower(concat('%', :term, '%'))
+                   or lower(c.name) like lower(concat('%', :term, '%'))
+                   or lower(c.phone) like lower(concat('%', :term, '%'))
+                order by c.id
+            ]]>
+        </query>
+    </named-query>
+
+    <named-query name="Contact.findByUserIdAndTerm">
+        <query>
+            <![CDATA[
+                select c
+                from Contact c
+                where c.user.id = :userId
+                  and (
+                      lower(c.surname) like lower(concat('%', :term, '%'))
+                      or lower(c.name) like lower(concat('%', :term, '%'))
+                      or lower(c.phone) like lower(concat('%', :term, '%'))
+                  )
+                order by c.id
+            ]]>
+        </query>
+    </named-query>
+
+    <named-query name="Contact.deleteContactById">
+        <query>
+            <![CDATA[
+                delete from Contact c
+                where c.id = :contactId
+            ]]>
+        </query>
+    </named-query>
+
+    <named-query name="Contact.deleteContactsByIds">
+        <query>
+            <![CDATA[
+                delete from Contact c
+                where c.id in :ids
+            ]]>
+        </query>
+    </named-query>
+
+    <named-query name="Contact.deleteByIdAndUserId">
+        <query>
+            <![CDATA[
+                delete from Contact c
+                where c.id = :contactId
+                  and c.user.id = :userId
+            ]]>
+        </query>
+    </named-query>
+
+    <named-query name="Contact.deleteAllByIdAndUserId">
+        <query>
+            <![CDATA[
+                delete from Contact c
+                where c.id in :ids
+                  and c.user.id = :userId
+            ]]>
+        </query>
+    </named-query>
+</entity-mappings>

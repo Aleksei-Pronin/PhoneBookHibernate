@@ -2,12 +2,13 @@ package ru.academits.phonebookhibernate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.academits.phonebookhibernate.dao.ContactRepository;
+import ru.academits.phonebookhibernate.dao.UserRepository;
 import ru.academits.phonebookhibernate.dto.BaseResponse;
 import ru.academits.phonebookhibernate.entity.Contact;
+import ru.academits.phonebookhibernate.security.CurrentUser;
 
 import java.util.List;
 
@@ -16,16 +17,25 @@ import java.util.List;
 @Slf4j
 public class ContactServiceImpl implements ContactService {
     private final ContactRepository contactRepository;
-    private final MessageSource messageSource;
+    private final CurrentUser currentUser;
+    private final UserRepository userRepository;
+    private final MessageService messageService;
 
     @Override
+    @Transactional(readOnly = true)
     public List<Contact> get(String term) {
         List<Contact> contacts;
 
-        if (term == null || term.isBlank()) {
-            contacts = contactRepository.findAllByOrderByIdAsc();
+        if (currentUser.isAdmin()) {
+            contacts = isNullOrBlank(term)
+                    ? contactRepository.findAllByOrderByIdAsc()
+                    : contactRepository.findByTerm(term.trim());
         } else {
-            contacts = contactRepository.findByTerm(term.trim());
+            Long userId = currentUser.getId();
+
+            contacts = isNullOrBlank(term)
+                    ? contactRepository.findByUserIdOrderByIdAsc(userId)
+                    : contactRepository.findByUserIdAndTerm(userId, term.trim());
         }
 
         log.debug("Loaded {} contact(s)", contacts.size());
@@ -33,27 +43,35 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
+    @Transactional
     public BaseResponse create(Contact contact) {
-        if (contactRepository.existsByPhoneIgnoreCase(contact.getPhone())) {
-            return BaseResponse.error(getMessage("contact.phone.already-exists"));
+        Long userId = currentUser.getId();
+
+        if (contactRepository.existsByPhoneIgnoreCaseAndUserId(contact.getPhone(), userId)) {
+            return BaseResponse.error(messageService.getMessage("contact.phone.already-exists"));
         }
 
+        contact.setUser(userRepository.getReferenceById(userId));
         contactRepository.save(contact);
         log.info("Contact created, id={}", contact.getId());
         return BaseResponse.ok();
     }
 
     @Override
+    @Transactional
     public BaseResponse update(Contact contact, int contactId) {
-        Contact existingContact = contactRepository.findById(contactId)
-                .orElse(null);
+        Contact existingContact = currentUser.isAdmin()
+                ? contactRepository.findById(contactId).orElse(null)
+                : contactRepository.findByIdAndUserId(contactId, currentUser.getId()).orElse(null);
 
         if (existingContact == null) {
-            return BaseResponse.error(getMessage("contact.not-found"));
+            return BaseResponse.error(messageService.getMessage("contact.not-found"));
         }
 
-        if (contactRepository.existsByPhoneIgnoreCaseAndIdNot(contact.getPhone(), contactId)) {
-            return BaseResponse.error(getMessage("contact.phone.already-exists"));
+        Long contactOwnerId = existingContact.getUser().getId();
+
+        if (contactRepository.existsByPhoneIgnoreCaseAndUserIdAndIdNot(contact.getPhone(), contactOwnerId, contactId)) {
+            return BaseResponse.error(messageService.getMessage("contact.phone.already-exists"));
         }
 
         existingContact.updateFrom(contact);
@@ -64,20 +82,36 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
+    @Transactional
     public BaseResponse delete(int contactId) {
-        contactRepository.deleteById(contactId);
+        int deletedContactsCount = currentUser.isAdmin()
+                ? contactRepository.deleteContactById(contactId)
+                : contactRepository.deleteByIdAndUserId(contactId, currentUser.getId());
+
+        if (deletedContactsCount == 0) {
+            return BaseResponse.error(messageService.getMessage("contact.not-found"));
+        }
+
         log.info("Contact deleted, id={}", contactId);
         return BaseResponse.ok();
     }
 
     @Override
+    @Transactional
     public BaseResponse delete(List<Integer> contactIds) {
-        contactRepository.deleteAllById(contactIds);
+        int deletedContactsCount = currentUser.isAdmin()
+                ? contactRepository.deleteContactsByIds(contactIds)
+                : contactRepository.deleteAllByIdAndUserId(contactIds, currentUser.getId());
+
+        if (deletedContactsCount == 0) {
+            return BaseResponse.error(messageService.getMessage("contact.not-found"));
+        }
+
         log.info("Contacts deleted, ids={}", contactIds);
         return BaseResponse.ok();
     }
 
-    private String getMessage(String key) {
-        return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
+    private boolean isNullOrBlank(String term) {
+        return term == null || term.isBlank();
     }
 }
