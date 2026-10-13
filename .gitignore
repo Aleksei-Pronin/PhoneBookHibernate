@@ -31,6 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
 /frontend/node_modules/
 src/main/resources/static/*.js
 src/main/resources/static/*.css
@@ -38,3 +39,5 @@ src/main/resources/static/*.woff
 src/main/resources/static/*.woff2
 src/main/resources/static/*.html
 src/main/resources/static/*.LICENSE.txt
+
+.env
